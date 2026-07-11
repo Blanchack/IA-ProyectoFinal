@@ -1,15 +1,17 @@
 import random
 
+import numpy as np
 from deap import algorithms, base, creator, tools
 
-from pacman_ga.fitness import fitness_base
-from pacman_ga.maze import enforce_borders
+from .fitness import fitness_base
+from .maze import Maze, enforce_borders
 
 POPULATION_SIZE = 100
 N_GENERATIONS = 1000
 CROSSOVER_PROB = 0.7
 MUTATION_PROB = 0.05
 CHROMOSOME_LENGTH = 400
+MAX_INTERIOR_WALLS = 48
 
 
 def cx_three_point(ind1, ind2):
@@ -62,6 +64,25 @@ def _fix_individual(individual):
     fixed = enforce_borders(list(individual))
     for i in range(len(individual)):
         individual[i] = fixed[i]
+    _enforce_max_interior_walls(individual)
+
+
+def _enforce_max_interior_walls(individual):
+    size = Maze.SIZE
+    grid = np.array(individual, dtype=int).reshape(size, size)
+    interior_ones = [
+        (r, c)
+        for r in range(1, size - 1)
+        for c in range(1, size - 1)
+        if grid[r, c] == 1
+    ]
+    excess = len(interior_ones) - MAX_INTERIOR_WALLS
+    if excess <= 0:
+        return
+    for r, c in random.sample(interior_ones, excess):
+        grid[r, c] = 0
+    for i, v in enumerate(grid.flatten().tolist()):
+        individual[i] = v
 
 
 def run_base(n_generations=N_GENERATIONS, pop_size=POPULATION_SIZE, verbose=True, elitism=True):
