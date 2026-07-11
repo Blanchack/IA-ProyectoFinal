@@ -1,0 +1,117 @@
+from collections import deque
+
+import numpy as np
+
+from pacman_ga.maze import Maze
+
+
+def bfs_reachability(grid):
+    free_cells = [
+        (r, c)
+        for r in range(grid.shape[0])
+        for c in range(grid.shape[1])
+        if grid[r, c] == 0
+    ]
+    if not free_cells:
+        return 0.0, set()
+
+    start = free_cells[0]
+    visited = set()
+    queue = deque([start])
+    visited.add(start)
+
+    while queue:
+        r, c = queue.popleft()
+        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            nr, nc = r + dr, c + dc
+            if (
+                0 <= nr < grid.shape[0]
+                and 0 <= nc < grid.shape[1]
+                and grid[nr, nc] == 0
+                and (nr, nc) not in visited
+            ):
+                visited.add((nr, nc))
+                queue.append((nr, nc))
+
+    return len(visited) / len(free_cells), visited
+
+
+def is_finishable(grid):
+    reachability, _ = bfs_reachability(grid)
+    return 1.0 if reachability >= 0.95 else 0.0
+
+
+def intersected_block_ratio(grid):
+    rows, cols = grid.shape
+    total_walls = 0
+    intersected_walls = 0
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r, c] == 1:
+                total_walls += 1
+                has_wall_neighbor = False
+                for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    nr, nc = r + dr, c + dc
+                    if 0 <= nr < rows and 0 <= nc < cols and grid[nr, nc] == 1:
+                        has_wall_neighbor = True
+                        break
+                if has_wall_neighbor:
+                    intersected_walls += 1
+    if total_walls == 0:
+        return 0.0
+    return intersected_walls / total_walls
+
+
+def homogeneity_factor(grid):
+    size = grid.shape[0]
+    half = size // 2
+    quadrants = [
+        grid[:half, :half],
+        grid[:half, half:],
+        grid[half:, :half],
+        grid[half:, half:],
+    ]
+    wall_counts = [np.sum(q == 1) for q in quadrants]
+    total = sum(wall_counts)
+    if total == 0:
+        return 0.0
+    mean = total / 4
+    variance = sum((w - mean) ** 2 for w in wall_counts) / 4
+    max_variance = mean**2
+    if max_variance == 0:
+        return 1.0
+    return max(0.0, 1.0 - (variance / max_variance))
+
+
+def horizontal_vertical_ratio(grid):
+    h_walls = 0
+    v_walls = 0
+    for r in range(grid.shape[0]):
+        for c in range(grid.shape[1]):
+            if grid[r, c] == 1:
+                if c + 1 < grid.shape[1] and grid[r, c + 1] == 1:
+                    h_walls += 1
+                if r + 1 < grid.shape[0] and grid[r + 1, c] == 1:
+                    v_walls += 1
+    if v_walls == 0:
+        return float(h_walls) if h_walls > 0 else 0.0
+    return h_walls / v_walls
+
+
+def block_size_ratio(grid):
+    wall_count = int(np.sum(grid == 1))
+    return (wall_count - 150) / 150
+
+
+def fitness_base(individual):
+    maze = Maze.from_chromosome(individual)
+    grid = maze.grid
+
+    finish = is_finishable(grid)
+    ibr = intersected_block_ratio(grid)
+    hf = homogeneity_factor(grid)
+    hvr = horizontal_vertical_ratio(grid)
+    bsr = block_size_ratio(grid)
+
+    fit = 0.4 * finish - 0.1 * ibr + 0.2 * hf + 0.2 * hvr + 0.2 * bsr
+    return (fit,)
