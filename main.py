@@ -1,6 +1,6 @@
-from pacman_ga2.genetic import run_base, N_GENERATIONS
-from pacman_ga2.plots import plot_paper_replication
-from pacman_ga2.visualizer import visualize_maze, save_maze_image
+from .genetic import run_base, N_GENERATIONS
+from .plots import plot_paper_replication
+from .visualizer import visualize_maze, save_maze_image
 
 
 def main():
