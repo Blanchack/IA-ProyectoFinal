@@ -104,6 +104,57 @@ def block_size_ratio(grid):
     return (interior_walls - 48) / 48
 
 
+def room_structure_ratio(grid):
+    rows, cols = grid.shape
+    corners = 0
+    total_walls = int(np.sum(grid == 1))
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r, c] == 1:
+                wall_dirs = []
+                for dr, dc, name in [
+                    (-1, 0, "N"),
+                    (1, 0, "S"),
+                    (0, -1, "W"),
+                    (0, 1, "E"),
+                ]:
+                    nr, nc = r + dr, c + dc
+                    if 0 <= nr < rows and 0 <= nc < cols and grid[nr, nc] == 1:
+                        wall_dirs.append(name)
+                if len(wall_dirs) == 2:
+                    if not (
+                        ("N" in wall_dirs and "S" in wall_dirs)
+                        or ("E" in wall_dirs and "W" in wall_dirs)
+                    ):
+                        corners += 1
+    if total_walls == 0:
+        return 0.0
+    return corners / total_walls
+
+
+def density_target_ratio(grid):
+    size = grid.shape[0]
+    interior_walls = int(np.sum(grid[1:size - 1, 1:size - 1] == 1))
+    density = interior_walls / (size * size)
+    target = 0.3
+    return max(0.0, 1.0 - abs(density - target) * 2)
+
+
+def fitness_improved(individual):
+    maze = Maze.from_chromosome(individual)
+    grid = maze.grid
+
+    finish = is_finishable(grid)
+    ibr = intersected_block_ratio(grid)
+    hf = homogeneity_factor(grid)
+    hvr = horizontal_vertical_ratio(grid)
+    rs = room_structure_ratio(grid)
+    dr = density_target_ratio(grid)
+
+    fit = 0.30 * finish - 0.10 * ibr + 0.15 * hf + 0.10 * hvr + 0.20 * rs + 0.15 * dr
+    return (fit,)
+
+
 def fitness_base(individual):
     maze = Maze.from_chromosome(individual)
     grid = maze.grid
