@@ -1,10 +1,11 @@
 import pygame
 import sys
-from pacman_ga.maze import Maze
-from pacman_ga.fitness import bfs_reachability
+from .maze import Maze
+from .fitness import bfs_reachability
 
 TILE_SIZE = 20
 WALL_COLOR = (0, 0, 255)
+BORDER_COLOR = (80, 80, 80)
 PATH_COLOR = (0, 0, 0)
 DOT_COLOR = (255, 0, 0)
 UNREACHABLE_COLOR = (255, 255, 255)
@@ -12,14 +13,17 @@ BG_COLOR = (0, 0, 0)
 
 
 def draw_maze(screen, maze, reachable_cells=None, offset_x=0, offset_y=0):
-    for r in range(maze.SIZE):
-        for c in range(maze.SIZE):
+    size = maze.SIZE
+    for r in range(size):
+        for c in range(size):
             rect = pygame.Rect(
                 offset_x + c * TILE_SIZE,
                 offset_y + r * TILE_SIZE,
                 TILE_SIZE, TILE_SIZE
             )
-            if maze.grid[r, c] == 1:
+            if r == 0 or r == size - 1 or c == 0 or c == size - 1:
+                pygame.draw.rect(screen, BORDER_COLOR, rect)
+            elif maze.grid[r, c] == 1:
                 pygame.draw.rect(screen, WALL_COLOR, rect)
             else:
                 pygame.draw.rect(screen, PATH_COLOR, rect)

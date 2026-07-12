@@ -64,10 +64,10 @@ def _fix_individual(individual):
     fixed = enforce_borders(list(individual))
     for i in range(len(individual)):
         individual[i] = fixed[i]
-    _enforce_max_interior_walls(individual)
+    _enforce_exact_interior_walls(individual)
 
 
-def _enforce_max_interior_walls(individual):
+def _enforce_exact_interior_walls(individual):
     size = Maze.SIZE
     grid = np.array(individual, dtype=int).reshape(size, size)
     interior_ones = [
@@ -76,11 +76,19 @@ def _enforce_max_interior_walls(individual):
         for c in range(1, size - 1)
         if grid[r, c] == 1
     ]
-    excess = len(interior_ones) - MAX_INTERIOR_WALLS
-    if excess <= 0:
-        return
-    for r, c in random.sample(interior_ones, excess):
-        grid[r, c] = 0
+    interior_zeros = [
+        (r, c)
+        for r in range(1, size - 1)
+        for c in range(1, size - 1)
+        if grid[r, c] == 0
+    ]
+    current = len(interior_ones)
+    if current > MAX_INTERIOR_WALLS:
+        for r, c in random.sample(interior_ones, current - MAX_INTERIOR_WALLS):
+            grid[r, c] = 0
+    elif current < MAX_INTERIOR_WALLS:
+        for r, c in random.sample(interior_zeros, MAX_INTERIOR_WALLS - current):
+            grid[r, c] = 1
     for i, v in enumerate(grid.flatten().tolist()):
         individual[i] = v
 

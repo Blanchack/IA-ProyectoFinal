@@ -1,6 +1,11 @@
-from .genetic import run_base, N_GENERATIONS
-from .plots import plot_paper_replication
-from .visualizer import visualize_maze, save_maze_image
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from pacman_ga2.genetic import run_base, N_GENERATIONS
+from pacman_ga2.plots import plot_paper_replication
+from pacman_ga2.visualizer import visualize_maze, save_maze_image
 
 
 def main():

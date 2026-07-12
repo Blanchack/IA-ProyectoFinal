@@ -2,7 +2,7 @@ from collections import deque
 
 import numpy as np
 
-from pacman_ga.maze import Maze
+from .maze import Maze
 
 
 def bfs_reachability(grid):
@@ -99,8 +99,9 @@ def horizontal_vertical_ratio(grid):
 
 
 def block_size_ratio(grid):
-    wall_count = int(np.sum(grid == 1))
-    return (wall_count - 150) / 150
+    size = grid.shape[0]
+    interior_walls = int(np.sum(grid[1:size - 1, 1:size - 1] == 1))
+    return (interior_walls - 48) / 48
 
 
 def fitness_base(individual):

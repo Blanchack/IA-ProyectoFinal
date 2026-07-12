@@ -2,7 +2,7 @@ import numpy as np
 
 
 class Maze:
-    SIZE = 20
+    SIZE = 22
 
     def __init__(self, grid=None):
         if grid is None:
