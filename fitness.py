@@ -140,18 +140,39 @@ def density_target_ratio(grid):
     return max(0.0, 1.0 - abs(density - target) * 2)
 
 
+def symmetry_ratio(grid):
+    size = grid.shape[0]
+    half = size // 2
+    n_UL = int(np.sum(grid[:half, :half] == 1))
+    n_UR = int(np.sum(grid[:half, half:] == 1))
+    n_LL = int(np.sum(grid[half:, :half] == 1))
+    n_LR = int(np.sum(grid[half:, half:] == 1))
+    S = abs(n_UL - n_UR + n_LL - n_LR)
+    return max(0.0, 1.0 - S / (size * size))
+
+
+def balance_ratio(grid):
+    size = grid.shape[0]
+    half = size // 2
+    O_TR = int(np.sum(grid[:half, :] == 1))
+    O_BR = int(np.sum(grid[half:, :] == 1))
+    B = abs(O_TR - O_BR)
+    return max(0.0, 1.0 - B / (size * size))
+
+
 def fitness_improved(individual):
     maze = Maze.from_chromosome(individual)
     grid = maze.grid
 
     finish = is_finishable(grid)
     ibr = intersected_block_ratio(grid)
-    hf = homogeneity_factor(grid)
     hvr = horizontal_vertical_ratio(grid)
     rs = room_structure_ratio(grid)
     dr = density_target_ratio(grid)
+    sr = symmetry_ratio(grid)
+    br = balance_ratio(grid)
 
-    fit = 0.30 * finish - 0.10 * ibr + 0.15 * hf + 0.10 * hvr + 0.20 * rs + 0.15 * dr
+    fit = 0.25 * finish - 0.10 * ibr + 0.10 * hvr + 0.20 * rs + 0.15 * dr + 0.15 * sr + 0.10 * br
     return (fit,)
 
 
