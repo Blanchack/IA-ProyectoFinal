@@ -3,7 +3,7 @@ import random
 import numpy as np
 from deap import algorithms, base, creator, tools
 
-from .fitness import fitness_base
+from .fitness import fitness_improved
 from .maze import Maze, enforce_borders
 
 POPULATION_SIZE = 100
@@ -11,7 +11,6 @@ N_GENERATIONS = 1000
 CROSSOVER_PROB = 0.7
 MUTATION_PROB = 0.05
 CHROMOSOME_LENGTH = Maze.SIZE * Maze.SIZE
-MAX_INTERIOR_WALLS = 48
 
 
 def cx_three_point(ind1, ind2):
@@ -64,38 +63,13 @@ def _fix_individual(individual):
     fixed = enforce_borders(list(individual))
     for i in range(len(individual)):
         individual[i] = fixed[i]
-    _enforce_exact_interior_walls(individual)
 
 
-def _enforce_exact_interior_walls(individual):
-    size = Maze.SIZE
-    grid = np.array(individual, dtype=int).reshape(size, size)
-    interior_ones = [
-        (r, c)
-        for r in range(1, size - 1)
-        for c in range(1, size - 1)
-        if grid[r, c] == 1
-    ]
-    interior_zeros = [
-        (r, c)
-        for r in range(1, size - 1)
-        for c in range(1, size - 1)
-        if grid[r, c] == 0
-    ]
-    current = len(interior_ones)
-    if current > MAX_INTERIOR_WALLS:
-        for r, c in random.sample(interior_ones, current - MAX_INTERIOR_WALLS):
-            grid[r, c] = 0
-    elif current < MAX_INTERIOR_WALLS:
-        for r, c in random.sample(interior_zeros, MAX_INTERIOR_WALLS - current):
-            grid[r, c] = 1
-    for i, v in enumerate(grid.flatten().tolist()):
-        individual[i] = v
-
-
-def run_base(n_generations=N_GENERATIONS, pop_size=POPULATION_SIZE, verbose=True, elitism=True):
+def run_improved(
+    n_generations=N_GENERATIONS, pop_size=POPULATION_SIZE, verbose=True, elitism=True
+):
     _reset_creators()
-    toolbox = _create_toolbox(fitness_base, cx_function=cx_three_point)
+    toolbox = _create_toolbox(fitness_improved, cx_function=cx_three_point)
 
     pop = toolbox.population(n=pop_size)
     for ind in pop:
@@ -141,7 +115,7 @@ def run_base(n_generations=N_GENERATIONS, pop_size=POPULATION_SIZE, verbose=True
 
         if verbose and gen % 200 == 0:
             print(
-                f"  [Base] Gen {gen}/{n_generations} | "
+                f"  [Improved] Gen {gen}/{n_generations} | "
                 f"Avg fitness: {avg_fit:.4f} | "
                 f"Best: {best_overall.fitness.values[0]:.4f}"
             )
