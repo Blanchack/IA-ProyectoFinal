@@ -208,7 +208,7 @@ def fitness_improved(individual):
     ie = isolated_elements_ratio(grid)
     de = dead_end_ratio(grid)
 
-    fit = 0.25 * reach - 0.10 * ibr + 0.10 * hvr + 0.20 * rs + 0.15 * dr + 0.15 * sr + 0.10 * br + 0.10 * ie + 0.10 * de
+    fit = 0.25 * reach - 0.10 * ibr + 0.10 * hvr + 0.20 * rs + 0.15 * dr + 0.15 * sr + 0.10 * br + 0.10 * ie + 0.30 * de
     return (fit,)
 
 

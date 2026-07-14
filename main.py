@@ -3,7 +3,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from pacman_ga2.genetic import run_base, N_GENERATIONS
+from pacman_ga2.genetic import run_base
 from pacman_ga2.genetic_improved import run_improved
 from pacman_ga2.plots import plot_paper_replication
 from pacman_ga2.visualizer import visualize_maze, save_maze_image
@@ -16,6 +16,8 @@ def main():
     print("3. AG mejorado con elitismo — Zafar et al. 2020")
     print("4. AG mejorado sin elitismo — Zafar et al. 2020")
     opcion = input("Selecciona una opción: ")
+
+    N_GENERATIONS = 1000
 
     if opcion == "1":
         fitness_log, best_per_gen = run_base(

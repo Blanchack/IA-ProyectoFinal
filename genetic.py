@@ -7,8 +7,8 @@ from .fitness import fitness_base
 from .maze import Maze, enforce_borders
 
 POPULATION_SIZE = 100
-N_GENERATIONS = 1000
 CROSSOVER_PROB = 0.7
+N_GENERATIONS = 1000
 MUTATION_PROB = 0.05
 CHROMOSOME_LENGTH = Maze.SIZE * Maze.SIZE
 MAX_INTERIOR_WALLS = 48
