@@ -160,19 +160,55 @@ def balance_ratio(grid):
     return max(0.0, 1.0 - B / (size * size))
 
 
+def isolated_elements_ratio(grid):
+    walls = np.argwhere(grid == 1)
+    if len(walls) == 0:
+        return 0.0
+    centroid = walls.mean(axis=0)
+    M = float(np.abs(walls - centroid).sum()) / len(walls)
+    return min(1.0, M / grid.shape[0])
+
+
+def reachability_ratio(grid):
+    r, _ = bfs_reachability(grid)
+    return r
+
+
+def dead_end_ratio(grid):
+    rows, cols = grid.shape
+    free = 0
+    dead_ends = 0
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r, c] == 0:
+                free += 1
+                free_neighbors = 0
+                for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    nr, nc = r + dr, c + dc
+                    if 0 <= nr < rows and 0 <= nc < cols and grid[nr, nc] == 0:
+                        free_neighbors += 1
+                if free_neighbors == 1:
+                    dead_ends += 1
+    if free == 0:
+        return 0.0
+    return 1.0 - dead_ends / free
+
+
 def fitness_improved(individual):
     maze = Maze.from_chromosome(individual)
     grid = maze.grid
 
-    finish = is_finishable(grid)
+    reach = reachability_ratio(grid)
     ibr = intersected_block_ratio(grid)
     hvr = horizontal_vertical_ratio(grid)
     rs = room_structure_ratio(grid)
     dr = density_target_ratio(grid)
     sr = symmetry_ratio(grid)
     br = balance_ratio(grid)
+    ie = isolated_elements_ratio(grid)
+    de = dead_end_ratio(grid)
 
-    fit = 0.25 * finish - 0.10 * ibr + 0.10 * hvr + 0.20 * rs + 0.15 * dr + 0.15 * sr + 0.10 * br
+    fit = 0.25 * reach - 0.10 * ibr + 0.10 * hvr + 0.20 * rs + 0.15 * dr + 0.15 * sr + 0.10 * br + 0.10 * ie + 0.10 * de
     return (fit,)
 
 
